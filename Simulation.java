@@ -2,6 +2,12 @@ import java.io.*;
 import java.util.*;
 
 public class Simulation {
+
+	Job currentJob;
+	Job nextJob;
+	static final Job jobWhichNeverArrives = new Job(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+	Queue waitingQueue;
+
 	public static void main(String[] args) throws IOException {
 		Scanner s = new Scanner(new BufferedReader(new InputStreamReader(System.in)));
 		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(System.out));
@@ -17,67 +23,71 @@ public class Simulation {
 
 		s.close();
 
-		Job current = job[0];
-		current.responseTime = current.serviceTime;
-		Job next = job[1];
-		Job jobWhichNeverArrives = new Job(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
-		int nextDepartureTime = job[0].arrivalTime + job[0].serviceTime;
-		Queue waitingQueue = new Queue();
+		waitingQueue = new Queue();
+		currentJob = job[0];
+		nextJob = job[1];
+		currentJob.responseTime = currentJob.serviceTime;
+		int currentJobDepartureTime = job[0].arrivalTime + job[0].serviceTime;
 
 		while (true) {
-			if (next.arrivalTime < nextDepartureTime) {
+			if (nextJob.arrivalTime < currentJobDepartureTime) {
 				// Next event is an arrival.
 
-				if (current == null) {
+				if (currentJob == null) {
 					// There is no job executing currently.
 					// So, arrived job will go directly to the server instead of the waiting queue.
-					current = next;
-					current.waitingTime = 0;
-					current.responseTime = current.serviceTime;
-					nextDepartureTime = next.arrivalTime + next.serviceTime;
+					currentJob = nextJob;
+					currentJob.waitingTime = 0;
+					currentJob.responseTime = currentJob.serviceTime;
+					currentJobDepartureTime = currentJob.arrivalTime + currentJob.serviceTime;
 				} else {
 					// Arrived job will go to the waiting queue.
-					waitingQueue.add(next);
+					waitingQueue.add(nextJob);
 				}
-				if (next.id == N-1) {
-					next = jobWhichNeverArrives;
+				if (nextJob.id == N-1) {
+					nextJob = jobWhichNeverArrives;
 				} else {
-					next = job[next.id + 1];
+					nextJob = job[nextJob.id + 1];
 				}
-			} else if (next.arrivalTime > nextDepartureTime) {
+			} else if (nextJob.arrivalTime > currentJobDepartureTime) {
 				// Next event is a departure.
 
-				if (current.id == N-1) {
+				if (currentJob.id == N-1) {
+					// Last job has departed.
 					break;
 				}
 				if (waitingQueue.isEmpty()) {
 					// Server will become idle.
-					current = null;
-					nextDepartureTime = Integer.MAX_VALUE;
+					currentJob = null;
+					currentJobDepartureTime = Integer.MAX_VALUE;
 				} else {
 					// Server gets the first job from the waiting queue.
-					current = waitingQueue.remove();
-					current.waitingTime = nextDepartureTime - current.arrivalTime;
-					current.responseTime = current.waitingTime + current.serviceTime;
-					nextDepartureTime += current.serviceTime;
+					currentJob = waitingQueue.remove();
+					currentJob.waitingTime = currentJobDepartureTime - currentJob.arrivalTime;
+					currentJob.responseTime = currentJob.waitingTime + currentJob.serviceTime;
+					currentJobDepartureTime += currentJob.serviceTime;
 				}
 			} else {
 				// A job departs and another job arrives at the same time.
 
 				if (waitingQueue.isEmpty()) {
-					current = next;
-					current.waitingTime = 0;
-					current.responseTime = current.serviceTime;
-					nextDepartureTime = next.arrivalTime + next.serviceTime;
+					currentJob = nextJob;
+					currentJob.waitingTime = 0;
+					currentJob.responseTime = currentJob.serviceTime;
+					currentJobDepartureTime = currentJob.arrivalTime + currentJob.serviceTime;
 				} else {
 					// Server gets the first job from the waiting queue.
-					current = waitingQueue.remove();
-					current.waitingTime = nextDepartureTime - current.arrivalTime;
-					current.responseTime = current.waitingTime + current.serviceTime;
-					nextDepartureTime += current.serviceTime;
-					waitingQueue.add(next);
+					currentJob = waitingQueue.remove();
+					currentJob.waitingTime = currentJobDepartureTime - currentJob.arrivalTime;
+					currentJob.responseTime = currentJob.waitingTime + currentJob.serviceTime;
+					currentJobDepartureTime += currentJob.serviceTime;
+					waitingQueue.add(nextJob);
 				}
-				next = job[next.id + 1];
+				if (nextJob.id == N-1) {
+					nextJob = jobWhichNeverArrives;
+				} else {
+					nextJob = job[nextJob.id + 1];
+				}
 			}
 		}
 		for (int i = 0; i < N; i++) {
