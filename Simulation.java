@@ -3,10 +3,7 @@ import java.util.*;
 
 public class Simulation {
 
-	static Job currentJob;
-	static Job nextJob;
 	static final Job jobWhichNeverArrives = new Job(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
-	static Queue waitingQueue;
 
 	public static void main(String[] args) throws IOException {
 		Scanner s = new Scanner(new BufferedReader(new InputStreamReader(System.in)));
@@ -23,14 +20,19 @@ public class Simulation {
 
 		s.close();
 
-		waitingQueue = new Queue();
-		currentJob = job[0];
-		nextJob = job[1];
+		Queue waitingQueue = new Queue();
+		Job currentJob = job[0];
+		Job nextJob = job[1];
 		int currentJobDepartureTime = job[0].arrivalTime + job[0].serviceTime;
+		int QiTi = 0;
+		int lastUpdate = 0;
 
 		while (true) {
 			if (nextJob.arrivalTime < currentJobDepartureTime) {
 				// Next event is an arrival.
+
+				QiTi += (waitingQueue.length * (nextJob.arrivalTime - lastUpdate));
+				lastUpdate = nextJob.arrivalTime;
 
 				if (currentJob == null) {
 					// There is no job executing currently.
@@ -49,6 +51,9 @@ public class Simulation {
 				}
 			} else if (nextJob.arrivalTime > currentJobDepartureTime) {
 				// Next event is a departure.
+
+				QiTi += (waitingQueue.length * (currentJobDepartureTime - lastUpdate));
+				lastUpdate = currentJobDepartureTime;
 
 				if (currentJob.id == N-1) {
 					// Last job has departed.
@@ -92,6 +97,8 @@ public class Simulation {
 					  " Job Waiting Time = " + job[i].waitingTime + 
 					  " Job Response Time = " + job[i].getResponseTime() + "\n");
 		}
+		out.write("QiTi = " + QiTi +
+		          " Average Queue length = " + QiTi/(double)currentJobDepartureTime + "\n");
 		out.flush();
 		out.close();
 	}
