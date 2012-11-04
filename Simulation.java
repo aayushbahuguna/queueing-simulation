@@ -3,10 +3,10 @@ import java.util.*;
 
 public class Simulation {
 
-	Job currentJob;
-	Job nextJob;
+	static Job currentJob;
+	static Job nextJob;
 	static final Job jobWhichNeverArrives = new Job(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
-	Queue waitingQueue;
+	static Queue waitingQueue;
 
 	public static void main(String[] args) throws IOException {
 		Scanner s = new Scanner(new BufferedReader(new InputStreamReader(System.in)));
@@ -26,7 +26,6 @@ public class Simulation {
 		waitingQueue = new Queue();
 		currentJob = job[0];
 		nextJob = job[1];
-		currentJob.responseTime = currentJob.serviceTime;
 		int currentJobDepartureTime = job[0].arrivalTime + job[0].serviceTime;
 
 		while (true) {
@@ -38,7 +37,6 @@ public class Simulation {
 					// So, arrived job will go directly to the server instead of the waiting queue.
 					currentJob = nextJob;
 					currentJob.waitingTime = 0;
-					currentJob.responseTime = currentJob.serviceTime;
 					currentJobDepartureTime = currentJob.arrivalTime + currentJob.serviceTime;
 				} else {
 					// Arrived job will go to the waiting queue.
@@ -64,7 +62,6 @@ public class Simulation {
 					// Server gets the first job from the waiting queue.
 					currentJob = waitingQueue.remove();
 					currentJob.waitingTime = currentJobDepartureTime - currentJob.arrivalTime;
-					currentJob.responseTime = currentJob.waitingTime + currentJob.serviceTime;
 					currentJobDepartureTime += currentJob.serviceTime;
 				}
 			} else {
@@ -73,13 +70,11 @@ public class Simulation {
 				if (waitingQueue.isEmpty()) {
 					currentJob = nextJob;
 					currentJob.waitingTime = 0;
-					currentJob.responseTime = currentJob.serviceTime;
 					currentJobDepartureTime = currentJob.arrivalTime + currentJob.serviceTime;
 				} else {
 					// Server gets the first job from the waiting queue.
 					currentJob = waitingQueue.remove();
 					currentJob.waitingTime = currentJobDepartureTime - currentJob.arrivalTime;
-					currentJob.responseTime = currentJob.waitingTime + currentJob.serviceTime;
 					currentJobDepartureTime += currentJob.serviceTime;
 					waitingQueue.add(nextJob);
 				}
@@ -95,7 +90,7 @@ public class Simulation {
 			          " Job Arrival Time = " + job[i].arrivalTime + 
 					  " Job Service Time = " + job[i].serviceTime + 
 					  " Job Waiting Time = " + job[i].waitingTime + 
-					  " Job Response Time = " + job[i].responseTime + "\n");
+					  " Job Response Time = " + job[i].getResponseTime() + "\n");
 		}
 		out.flush();
 		out.close();
@@ -146,12 +141,15 @@ class Job {
 	int arrivalTime;
 	int serviceTime;
 	int waitingTime;
-	int responseTime;
 	Job next;
 
 	Job (int id, int arrivalTime, int serviceTime) {
 		this.id = id;
 		this.arrivalTime = arrivalTime;
 		this.serviceTime = serviceTime;
+	}
+
+	int getResponseTime() {
+		return waitingTime + serviceTime;
 	}
 }
