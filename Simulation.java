@@ -15,8 +15,9 @@ public class Simulation {
 
 		Job[] job = new Job[N];
 
-		double arrivalTime = nextRandomExponential(lambda);
-		double serviceTime = nextRandomExponential(mu);
+		Random rnd = new Random();
+		double arrivalTime = nextRandomExponential(rnd, lambda);
+		double serviceTime = nextRandomExponential(rnd, mu);
 
 		job[0] = new Job(0, arrivalTime, serviceTime);
 
@@ -27,8 +28,8 @@ public class Simulation {
 			// The default random number generated follow uniform distribution.
 			// We need to convert that distribution into exponential distribution.
 
-			arrivalTime = nextRandomExponential(lambda) + job[i-1].arrivalTime;
-			serviceTime = nextRandomExponential(mu);
+			arrivalTime = nextRandomExponential(rnd, lambda) + job[i-1].arrivalTime;
+			serviceTime = nextRandomExponential(rnd, mu);
 
 			job[i] = new Job(i, arrivalTime, serviceTime); 
 		}
@@ -107,20 +108,18 @@ public class Simulation {
 		}
 		for (int i = 0; i < N; i++) {
 			out.write("Job ID = " + job[i].id + 
-			          " Job Arrival Time = " + job[i].arrivalTime + 
-					  " Job Service Time = " + job[i].serviceTime + 
-					  " Job Waiting Time = " + job[i].waitingTime + 
-					  " Job Response Time = " + job[i].getResponseTime() + "\n");
+			          " Arrival Time = " + job[i].arrivalTime + 
+					  " Service Time = " + job[i].serviceTime + 
+					  " Waiting Time = " + job[i].waitingTime + 
+					  " Response Time = " + job[i].getResponseTime() + "\n");
 		}
-		out.write("QiTi = " + QiTi +
-		          " Average Queue length = " + QiTi/(double)currentJobDepartureTime + "\n");
+		out.write("Average Queue length = " + QiTi/currentJobDepartureTime +
+				  " Throughput = " + N/currentJobDepartureTime +  "\n");
 		out.flush();
 		out.close();
 	}
 
-	static double nextRandomExponential(int l) {
-		Random rnd = new Random();
-
+	static double nextRandomExponential(Random rnd, double l) {
 		double rndU = rnd.nextDouble();
 		double expX = -1 * Math.log(1-rndU) / l;
 
