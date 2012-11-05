@@ -10,11 +10,38 @@ public class Simulation {
 		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(System.out));
 
 		int N = s.nextInt();
+		double lambda = s.nextDouble();
+		double mu = s.nextDouble();
+
 		Job[] job = new Job[N];
 
-		for (int i = 0; i < N; i++) {
-			int arrivalTime = s.nextInt();
-			int serviceTime = s.nextInt();
+		Random rnd = new Random();
+
+		double rndU = rnd.nextDouble();
+		double expX = -1 * Math.log(1-rndU) / lambda;
+		int arrivalTime = (int) expX;
+		
+		rndU = rnd.nextDouble();
+		expX = -1 * Math.log(1-rndU) / mu;
+		int serviceTime = (int) expX;
+
+		job[0] = new Job(0, arrivalTime, serviceTime);
+
+		for (int i = 1; i < N; i++) {
+			// Inter arrival times are exponentially distributed.
+			// Service time is exponentially distributed.
+			// We want to generate random numbers which follow exponential distribution.
+			// The default random number generated follow uniform distribution.
+			// We need to convert that distribution into exponential distribution.
+
+			rndU = rnd.nextDouble();
+			expX = -1 * Math.log(1-rndU) / lambda;
+			arrivalTime = (int) expX + job[i-1].arrivalTime;
+
+			rndU = rnd.nextDouble();
+			expX = -1 * Math.log(1-rndU) / mu;
+			serviceTime = (int) expX;
+
 			job[i] = new Job(i, arrivalTime, serviceTime); 
 		}
 
