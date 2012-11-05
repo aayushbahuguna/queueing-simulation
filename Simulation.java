@@ -108,10 +108,10 @@ public class Simulation {
 		}
 		for (int i = 0; i < N; i++) {
 			out.write("Job ID = " + job[i].id + 
-			          " Arrival Time = " + job[i].arrivalTime + 
-					  " Service Time = " + job[i].serviceTime + 
-					  " Waiting Time = " + job[i].waitingTime + 
-					  " Response Time = " + job[i].getResponseTime() + "\n");
+			          " Arrival Time = " + String.format("%.3f", job[i].arrivalTime) + 
+					  " Service Time = " + String.format("%.3f", job[i].serviceTime) + 
+					  " Waiting Time = " + String.format("%.3f", job[i].waitingTime) + 
+					  " Response Time = " + String.format("%.3f", job[i].getResponseTime()) + "\n");
 		}
 		out.write("Average Queue length = " + QiTi/currentJobDepartureTime +
 				  " Throughput = " + N/currentJobDepartureTime +  "\n");
