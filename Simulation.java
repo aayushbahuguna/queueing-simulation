@@ -15,15 +15,8 @@ public class Simulation {
 
 		Job[] job = new Job[N];
 
-		Random rnd = new Random();
-
-		double rndU = rnd.nextDouble();
-		double expX = -1 * Math.log(1-rndU) / lambda;
-		int arrivalTime = (int) expX;
-		
-		rndU = rnd.nextDouble();
-		expX = -1 * Math.log(1-rndU) / mu;
-		int serviceTime = (int) expX;
+		double arrivalTime = nextRandomExponential(lambda);
+		double serviceTime = nextRandomExponential(mu);
 
 		job[0] = new Job(0, arrivalTime, serviceTime);
 
@@ -34,13 +27,8 @@ public class Simulation {
 			// The default random number generated follow uniform distribution.
 			// We need to convert that distribution into exponential distribution.
 
-			rndU = rnd.nextDouble();
-			expX = -1 * Math.log(1-rndU) / lambda;
-			arrivalTime = (int) expX + job[i-1].arrivalTime;
-
-			rndU = rnd.nextDouble();
-			expX = -1 * Math.log(1-rndU) / mu;
-			serviceTime = (int) expX;
+			arrivalTime = nextRandomExponential(lambda) + job[i-1].arrivalTime;
+			serviceTime = nextRandomExponential(mu);
 
 			job[i] = new Job(i, arrivalTime, serviceTime); 
 		}
@@ -50,9 +38,9 @@ public class Simulation {
 		Queue waitingQueue = new Queue();
 		Job currentJob = job[0];
 		Job nextJob = job[1];
-		int currentJobDepartureTime = job[0].arrivalTime + job[0].serviceTime;
-		int QiTi = 0;
-		int lastUpdate = 0;
+		double currentJobDepartureTime = job[0].arrivalTime + job[0].serviceTime;
+		double QiTi = 0;
+		double lastUpdate = 0;
 
 		while (true) {
 			if (nextJob.arrivalTime < currentJobDepartureTime) {
@@ -129,6 +117,15 @@ public class Simulation {
 		out.flush();
 		out.close();
 	}
+
+	static double nextRandomExponential(int l) {
+		Random rnd = new Random();
+
+		double rndU = rnd.nextDouble();
+		double expX = -1 * Math.log(1-rndU) / l;
+
+		return expX;
+	}
 }
 
 class Queue {
@@ -172,18 +169,18 @@ class Queue {
 
 class Job {
 	int id;
-	int arrivalTime;
-	int serviceTime;
-	int waitingTime;
+	double arrivalTime;
+	double serviceTime;
+	double waitingTime;
 	Job next;
 
-	Job (int id, int arrivalTime, int serviceTime) {
+	Job (int id, double arrivalTime, double serviceTime) {
 		this.id = id;
 		this.arrivalTime = arrivalTime;
 		this.serviceTime = serviceTime;
 	}
 
-	int getResponseTime() {
+	double getResponseTime() {
 		return waitingTime + serviceTime;
 	}
 }
