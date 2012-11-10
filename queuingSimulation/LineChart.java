@@ -1,5 +1,4 @@
 package queuingSimulation;
-
 import java.awt.Color;
 
 import org.jfree.chart.ChartFactory;
@@ -18,9 +17,9 @@ import org.jfree.ui.RefineryUtilities;
 public class LineChart extends ApplicationFrame {
     public LineChart(double[] X, double[] Y, String title, String xAxis, String yAxis) {
         super(title);
-        final XYDataset dataset = createDataset(X, Y, yAxis);
-        final JFreeChart chart = createChart(dataset, title, xAxis, yAxis);
-        final ChartPanel chartPanel = new ChartPanel(chart);
+        XYDataset dataset = createDataset(X, Y, yAxis);
+        JFreeChart chart = createChart(dataset, title, xAxis, yAxis);
+        ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
         setContentPane(chartPanel);
 
@@ -65,19 +64,10 @@ public class LineChart extends ApplicationFrame {
                 
         return chart;
     }
-    
-   /* public static void main(final String[] args) {
-    	double[] X = new double[10];
-    	double[] Y = new double[10];
-    	for(int i = 0; i < 10; i++){
-    		X[i] = i;
-    		Y[i] = i;
-    	}
-        final LineChart demo = new LineChart(X, Y, "Queue Length", "Time", "Queue Length");
-        demo.pack();
-        RefineryUtilities.centerFrameOnScreen(demo);
-        demo.setVisible(true);
-
-    }*/
-
+    public static void createChart(double[] X, double[] Y, String title, String xAxis, String yAxis){
+        LineChart chart = new LineChart(X, Y, title, xAxis, yAxis);
+        chart.pack();
+        RefineryUtilities.centerFrameOnScreen(chart);
+        chart.setVisible(true);
+    }
 }
