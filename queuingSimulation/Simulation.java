@@ -43,8 +43,8 @@ public class Simulation {
 
 		ArrayList<Double> qltGraphQueueLength = new ArrayList<Double>();
 		ArrayList<Double> qltGraphTime = new ArrayList<Double>();
-		ArrayList<Double> ttGraphTime = new ArrayList<Double>();
 		ArrayList<Double> ttGraphThroughput = new ArrayList<Double>();
+		ArrayList<Double> ttGraphTime = new ArrayList<Double>();
 		double numberOfJobs = 0.0;
 		double totalServiceTime = 0.0;
 
@@ -74,6 +74,8 @@ public class Simulation {
 					currentJob = nextJob;
 					currentJob.waitingTime = 0;
 					currentJobDepartureTime = currentJob.arrivalTime + currentJob.serviceTime;
+					ttGraphThroughput.add(ttGraphThroughput.get(ttGraphThroughput.size() - 1));
+					ttGraphTime.add(currentJob.arrivalTime);
 				} else {
 					// Arrived job will go to the waiting queue.
 					// Dropping packet when queue is full.
@@ -83,8 +85,6 @@ public class Simulation {
 						waitingQueue.add(nextJob);
 						qltGraphQueueLength.add((double) waitingQueue.size());
 						qltGraphTime.add(nextJob.arrivalTime);
-					} else {
-						System.out.println("Job " + nextJob.id + " dropped");
 					}
 				}
 				if (nextJob.id == N - 1) {
@@ -94,15 +94,23 @@ public class Simulation {
 				}
 			} else if (nextJob.arrivalTime > currentJobDepartureTime) {
 				// Next event is a departure.
+				if (numberOfJobs == 0) {
+					ttGraphThroughput.add(0.0);
+					ttGraphTime.add(currentJobDepartureTime - epsilon);
+				}
 				numberOfJobs++;
+				currentJob.jobStatus = status.SERVED;
+
 				totalServiceTime += currentJob.serviceTime;
-				ttGraphThroughput.add(currentJobDepartureTime);
-				ttGraphTime.add(numberOfJobs / totalServiceTime);
+				ttGraphThroughput.add(numberOfJobs / totalServiceTime);
+				ttGraphTime.add(currentJobDepartureTime);
 
 				QiTi += (waitingQueue.size() * (currentJobDepartureTime - lastUpdate));
 				lastUpdate = currentJobDepartureTime;
 
-				if (currentJob.id == N - 1 || nextJob.arrivalTime == Integer.MAX_VALUE) {
+				if (currentJob.id == N - 1 || (nextJob.arrivalTime == Integer.MAX_VALUE && waitingQueue.size() == 0)) {
+					qltGraphQueueLength.add(0.0);
+					qltGraphTime.add(currentJobDepartureTime);
 					// Last job has departed.
 					break;
 				}
@@ -125,8 +133,8 @@ public class Simulation {
 				// A job departs and another job arrives at the same time.
 				numberOfJobs++;
 				totalServiceTime += currentJob.serviceTime;
-				ttGraphThroughput.add(currentJobDepartureTime);
-				ttGraphTime.add(numberOfJobs / totalServiceTime);
+				ttGraphTime.add(currentJobDepartureTime);
+				ttGraphThroughput.add(numberOfJobs / totalServiceTime);
 
 				if (waitingQueue.isEmpty()) {
 					currentJob = nextJob;
@@ -153,24 +161,25 @@ public class Simulation {
 			Y[i] = qltGraphQueueLength.get(i);
 		}
 		LineChart.createChart(X, Y, "Queue Length vs Time", "Time", "QueueLength");
-		
-		double[] X1 = new double[ttGraphThroughput.size()];
-		double[] Y1 = new double[ttGraphTime.size()];
+
+		double[] X1 = new double[ttGraphTime.size()];
+		double[] Y1 = new double[ttGraphThroughput.size()];
 		for (int i = 0; i < X1.length; i++) {
-			X1[i] = ttGraphThroughput.get(i);
-			Y1[i] = ttGraphTime.get(i);
+			X1[i] = ttGraphTime.get(i);
+			Y1[i] = ttGraphThroughput.get(i);
 		}
 		LineChart.createChart(X1, Y1, "Throughput vs Time", "Time", "Throughput");
 
-		
-		  for (int i = 0; i < N; i++) { out.write("Job ID = " + job[i].id +
-		  " Arrival Time = " + String.format("%.3f", job[i].arrivalTime) +
-		  " Service Time = " + String.format("%.3f", job[i].serviceTime) +
-		  " Waiting Time = " + String.format("%.3f", job[i].waitingTime) +
-		  " Response Time = " + String.format("%.3f", job[i].getResponseTime())
-		  + "\n"); }
-		 
-		out.write("Average Queue length = " + QiTi / currentJobDepartureTime + " Throughput = " + N / currentJobDepartureTime + "\n");
+		for (int i = 0; i < N; i++) {
+			if (job[i].jobStatus == status.SERVED) {
+				out.write("Job ID = " + job[i].id + " Arrival Time = " + String.format("%.3f", job[i].arrivalTime) + " Service Time = " + String.format("%.3f", job[i].serviceTime)
+						+ " Waiting Time = " + String.format("%.3f", job[i].waitingTime) + " Response Time = " + String.format("%.3f", job[i].getResponseTime()) + "\n");
+			} else {
+				out.write("Job ID = " + job[i].id + " Arrival Time = " + String.format("%.3f", job[i].arrivalTime) + " DROPPED" + "\n");
+			}
+		}
+
+		out.write("Average Queue length = " + QiTi / currentJobDepartureTime + " Throughput = " + numberOfJobs / totalServiceTime + "\n");
 		out.flush();
 		out.close();
 	}

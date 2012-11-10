@@ -1,5 +1,9 @@
 package queuingSimulation;
+enum status{
+	SERVED, UNSERVED;		
+}
 public class Job {
+	status jobStatus;
 	int id;
 	double arrivalTime;
 	double serviceTime;
@@ -7,6 +11,7 @@ public class Job {
 	Job next;
 
 	Job (int id, double arrivalTime, double serviceTime) {
+		jobStatus = status.UNSERVED;
 		this.id = id;
 		this.arrivalTime = arrivalTime;
 		this.serviceTime = serviceTime;
